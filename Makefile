@@ -9,3 +9,9 @@ jupyterlab-up:
 
 jupyterlab-down:
 	docker-compose -f jupyterlab/docker/docker-compose.yaml down --volumes --rmi all
+
+api-up:
+	docker-compose -f api/docker/docker-compose.yaml up
+
+api-down:
+	docker-compose -f api/docker/docker-compose.yaml down --volumes --rmi all

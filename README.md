@@ -17,4 +17,5 @@ This monorepo contains all parts needed to develop Sommelier.
 - Assumes docker is installed.
 - Assumes knowledge of Makefile. If your system does not support Makefile, replace make command with the correspending commands.
 1. run `make scraper-up` to download data.
-2. run `make jupyterlab-up` to start notebook (Copy link printed in terminal)
+2. run `make jupyterlab-up` to start notebook (Copy link printed in terminal).
+3. run `make api-up` to start fastapi. This will be used to serve model predictions.

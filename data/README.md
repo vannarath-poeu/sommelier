@@ -1,0 +1,1 @@
+The content in this folder should not be version.

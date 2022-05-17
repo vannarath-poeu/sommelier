@@ -19,3 +19,6 @@ This monorepo contains all parts needed to develop Sommelier.
 1. run `make scraper-up` to download data.
 2. run `make jupyterlab-up` to start notebook (Copy link printed in terminal).
 3. run `make api-up` to start fastapi. This will be used to serve model predictions.
+4. run `make app-up` to start React app. This will be used as the front-end for user interactions. Note: the first run is extremely slow while packages are being installed.
+
+(Optional): the above commands have a down version where you replace the `-up` with `-down` to destroy the dockers. This should be used when drastic changes are made and cache needs to be destroyed.

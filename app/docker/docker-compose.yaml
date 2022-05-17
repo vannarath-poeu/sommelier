@@ -1,0 +1,14 @@
+services:
+  sommelier:
+    image: sommelier-app
+    container_name: sommelier-app
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: app.dockerfile
+    ports:
+      - 3000:3000
+    working_dir: /sommelier/app/src
+    volumes:
+      - ../../:/sommelier
+    command: bash -c "npm install && npm start"

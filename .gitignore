@@ -2,3 +2,4 @@ data/*.csv
 **/.DS_Store
 **/.ipynb_checkpoints/
 **/__pycache__/
+**/node_modules/

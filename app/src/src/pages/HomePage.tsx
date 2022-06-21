@@ -9,20 +9,47 @@ import {
   PersonOutlineOutlined,
 } from '@mui/icons-material';
 import randomColor from 'randomcolor';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-import WineList from '../wine-info.json';
+import { API_URL } from '../const';
 
 export default function HomePage() {
-  const topWine = WineList[0];
-  const recommendedWineList = WineList.slice(1, 5);
-  const sweetJuicyWineList = WineList.slice(10, 15);
+
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [mostPops, setMostPops] = React.useState<any>([]);
+  const [recommendations, setRecommendations] = React.useState<any>([]);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { user } = location.state as any;
 
   function logout() {
     navigate('/');
   }
+
+  React.useEffect(() => {
+    async function loadRecommendations() {
+      const username: string = user["id"];
+      const response = await fetch(`${API_URL}users/${username}/recommendations`);
+      const recommendation: any = await response.json();
+      setRecommendations(recommendation["recommendations"]);
+
+      const mostPopResponse = await fetch(`${API_URL}users/unknown/recommendations`);
+      const mostPopRecommendation: any = await mostPopResponse.json();
+      setMostPops(mostPopRecommendation["recommendations"]);
+      setIsLoading(false);
+    }
+    loadRecommendations();
+  }, [])
+
+  if (isLoading) {
+    return <div>Loading ...</div>
+  }
+
+  const topWine = mostPops[0];
+  const mostPopWineList = mostPops.slice(1);
+  const forYouWineList = recommendations;
 
   return (
     <Stack
@@ -109,7 +136,7 @@ export default function HomePage() {
                   color: 'white',
                 }}
               >
-                Lorem ipsum something useful
+                Our best selling item! Definitely worth a try.
               </Typography>
             </Stack>
           </Stack>
@@ -126,7 +153,7 @@ export default function HomePage() {
               fontSize: '24px',
             }}
           >
-            Recommended for you
+            Most Popular
           </Typography>
           <Stack
             sx={{
@@ -137,8 +164,9 @@ export default function HomePage() {
               marginTop: 0,
             }}
           >
-            {recommendedWineList.map(wine => (
+            {mostPopWineList.map((wine: any) => (
               <Box
+                key={wine._id}
                 sx={{
                   height: '256px',
                   width: '192px',
@@ -169,7 +197,7 @@ export default function HomePage() {
                   <Typography
                     sx={{
                       fontWeight: 'bold',
-                      fontSize: '20px',
+                      fontSize: '16px',
                       color: 'white',
                     }}
                   >
@@ -181,7 +209,7 @@ export default function HomePage() {
                       color: 'white',
                     }}
                   >
-                    Lorem ipsum something useful
+                    {wine.producer} - {wine.country_name}
                   </Typography>
                 </Stack>
               </Box>
@@ -201,7 +229,7 @@ export default function HomePage() {
               fontSize: '24px',
             }}
           >
-            Sweet and Juicy
+            Recommended For You
           </Typography>
           <Stack
             sx={{
@@ -212,8 +240,9 @@ export default function HomePage() {
               marginTop: 0,
             }}
           >
-            {sweetJuicyWineList.map(wine => (
+            {forYouWineList.map((wine: any) => (
               <Box
+                key={wine._id}
                 sx={{
                   height: '256px',
                   width: '192px',
@@ -244,7 +273,7 @@ export default function HomePage() {
                   <Typography
                     sx={{
                       fontWeight: 'bold',
-                      fontSize: '20px',
+                      fontSize: '16px',
                       color: 'white',
                     }}
                   >
@@ -256,7 +285,7 @@ export default function HomePage() {
                       color: 'white',
                     }}
                   >
-                    Lorem ipsum something useful
+                    {wine.producer} - {wine.country_name}
                   </Typography>
                 </Stack>
               </Box>
@@ -264,7 +293,7 @@ export default function HomePage() {
           </Stack>
         </Stack>
       </Stack>
-      <Stack
+      {/* <Stack
         sx={{
           width: '100%',
           flexDirection: 'row',
@@ -284,7 +313,7 @@ export default function HomePage() {
         <IconButton aria-label="menu">
           <PersonOutlineOutlined />
         </IconButton>
-      </Stack>
+      </Stack> */}
     </Stack>
   );
 }

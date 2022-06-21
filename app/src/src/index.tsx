@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import App from './App';
 import theme from './theme';
+import { SnackbarProvider } from 'notistack';
 
 import "./index.css";
 
@@ -15,8 +16,10 @@ root.render(
   <ThemeProvider theme={theme}>
     {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
     <CssBaseline />
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <SnackbarProvider maxSnack={3}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </SnackbarProvider>
   </ThemeProvider>,
 );

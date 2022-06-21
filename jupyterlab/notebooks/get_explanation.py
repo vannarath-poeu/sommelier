@@ -1,10 +1,9 @@
 
+
 import sys
 import numpy as np
 import pandas as pd
 import pickle
-import cornac
-from cornac.models import EFM
 
 
 
@@ -28,7 +27,7 @@ def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,
         style=wine_info.loc[ raw_str_iid]['Wine']
     #explain=EFM.load("EMF/EFM/2022-06-21_21-59-21-061287.pkl", trainable=False)
     
-    U1,U2,V=pickle.load(open("../../data/U1.p", "rb")),pickle.load(open("data/U2.p", "rb")),pickle.load(open("data/V.p", "rb"))
+    U1,U2,V=pickle.load(open("../../data/U1.p", "rb")),pickle.load(open("../../data/U2.p", "rb")),pickle.load(open("../../data/V.p", "rb"))
     uidmap=pickle.load(open("../../data/uidmap.p", "rb"))
     iidmap=pickle.load(open("../../data/iidmap.p", "rb"))
 
@@ -67,4 +66,5 @@ def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,
     return explanation
     
 if __name__=='__main__':
-    print(get_explanation ('58534725','1135843') )
+    print(get_explanation ('58534725','14372') )
+    print(get_explanation ('58534725','79762') )

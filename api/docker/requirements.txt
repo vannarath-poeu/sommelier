@@ -1,3 +1,8 @@
+adjustText==0.7.3
+cornac==1.14.2
 fastapi>=0.68.0,<0.69.0
 pydantic>=1.8.0,<2.0.0
+tensorflow==1.15.5
 uvicorn>=0.15.0,<0.16.0
+pymongo==4.1.1
+dnspython==2.2.1

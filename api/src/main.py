@@ -29,6 +29,11 @@ dataset = cornac.data.Dataset.from_uir(data)
 ctr.fit(dataset)
 ctr_item_ids = list(ctr.train_set.item_ids)
 
+# Load MostPop
+most_pop = cornac.models.MostPop.load("../../data/MostPop.pkl", trainable=False)
+most_pop.fit(dataset)
+most_pop_item_ids = list(most_pop.train_set.item_ids)
+
 app = FastAPI()
 
 app.add_middleware(
@@ -48,7 +53,9 @@ def hellow():
 def get_recommendations_for_user(user_id: str, q: Union[str, None] = None):
   idx = dataset.uid_map.get(user_id, None)
   if idx is None:
-    wine_list = db.wines.find()
+    item_idx_list, _ = most_pop.rank(0)
+    item_id_list = [most_pop_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
+    wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
     return {
       "mode": "MostPop",
       "user_id": user_id,

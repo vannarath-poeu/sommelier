@@ -13,3 +13,5 @@ scraper/env/
 scraper/review_data/
 scraper/wine_data/
 scraper/user_links.json
+
+**/cornac_experiments/

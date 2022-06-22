@@ -28,8 +28,16 @@ export default function HomePage() {
     navigate('/');
   }
 
+  function goToWine(wine: any) {
+    navigate('/wine', { state: { wine: wine, user: user }});
+  }
+
   React.useEffect(() => {
     async function loadRecommendations() {
+      if (!user) {
+        logout();
+        return;
+      }
       const username: string = user["id"];
       const response = await fetch(`${API_URL}users/${username}/recommendations`);
       const recommendation: any = await response.json();
@@ -47,7 +55,73 @@ export default function HomePage() {
     return <div>Loading ...</div>
   }
 
-  const topWine = mostPops[0];
+  function wineList(wines: any) {
+    return (
+      <Stack
+        sx={{
+          height: '100%',
+          flexDirection: 'row',
+          overflowX: 'auto',
+          overflowY: 'clip',
+          marginTop: 0,
+        }}
+      >
+        {wines.map((wine: any) => (
+          <Box
+            key={wine._id}
+            sx={{
+              height: '256px',
+              width: '192px',
+              borderRadius: '8px',
+              backgroundColor: randomColor({ luminosity: 'dark' }),
+              flexShrink: 0,
+              marginRight: '24px',
+              marginTop: '16px',
+              position: 'relative',
+            }}
+            onClick={() => goToWine(wine)}
+          >
+            <img
+              style={{
+                height: '156px',
+                position: 'absolute',
+                top: '-16px',
+                left: 'calc(50% - 25px)',
+              }}
+              src={"https:" + wine.wine_image_url}
+            />
+            <Stack
+              sx={{
+                alignItems: 'flex-start',
+                padding: '16px',
+                paddingTop: '156px',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  color: 'white',
+                }}
+              >
+                {wine.wine_name}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '12px',
+                  color: 'white',
+                }}
+              >
+                {wine.producer} - {wine.country_name}
+              </Typography>
+            </Stack>
+          </Box>
+        ))}
+      </Stack>
+    )
+  }
+
+  const topWine = mostPops[Math.floor(Math.random() * mostPops.length)];
   const mostPopWineList = mostPops.slice(1);
   const forYouWineList = recommendations;
 
@@ -66,9 +140,15 @@ export default function HomePage() {
           padding: '16px',
         }}
       >
-        <IconButton aria-label="menu">
-          <MenuRounded />
-        </IconButton>
+        <Typography
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '24px',
+          }}
+          variant="h6"
+        >
+          Welcome back, {user.name}!
+        </Typography>
         <IconButton aria-label="logout" onClick={() => logout()}>
           <LogoutOutlined />
         </IconButton>
@@ -94,7 +174,7 @@ export default function HomePage() {
               fontSize: '24px',
             }}
           >
-            Top Choice
+            Spotlight
           </Typography>
           <Stack
             sx={{
@@ -120,6 +200,7 @@ export default function HomePage() {
                 padding: '16px',
                 paddingLeft: '128px',
               }}
+              onClick={() => goToWine(topWine)}
             >
               <Typography
                 sx={{
@@ -136,7 +217,7 @@ export default function HomePage() {
                   color: 'white',
                 }}
               >
-                Our best selling item! Definitely worth a try.
+                Our top pick! Don't miss out!.
               </Typography>
             </Stack>
           </Stack>
@@ -155,66 +236,7 @@ export default function HomePage() {
           >
             Most Popular
           </Typography>
-          <Stack
-            sx={{
-              height: '100%',
-              flexDirection: 'row',
-              overflowX: 'auto',
-              overflowY: 'clip',
-              marginTop: 0,
-            }}
-          >
-            {mostPopWineList.map((wine: any) => (
-              <Box
-                key={wine._id}
-                sx={{
-                  height: '256px',
-                  width: '192px',
-                  borderRadius: '8px',
-                  backgroundColor: randomColor({ luminosity: 'dark' }),
-                  flexShrink: 0,
-                  marginRight: '24px',
-                  marginTop: '16px',
-                  position: 'relative',
-                }}
-              >
-                <img
-                  style={{
-                    height: '156px',
-                    position: 'absolute',
-                    top: '-16px',
-                    left: 'calc(50% - 25px)',
-                  }}
-                  src={"https:" + wine.wine_image_url}
-                />
-                <Stack
-                  sx={{
-                    alignItems: 'flex-start',
-                    padding: '16px',
-                    paddingTop: '156px',
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: 'bold',
-                      fontSize: '16px',
-                      color: 'white',
-                    }}
-                  >
-                    {wine.wine_name}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '12px',
-                      color: 'white',
-                    }}
-                  >
-                    {wine.producer} - {wine.country_name}
-                  </Typography>
-                </Stack>
-              </Box>
-            ))}
-          </Stack>
+          {wineList(mostPopWineList)}
         </Stack>
 
         <Stack
@@ -231,66 +253,7 @@ export default function HomePage() {
           >
             Recommended For You
           </Typography>
-          <Stack
-            sx={{
-              height: '100%',
-              flexDirection: 'row',
-              overflowX: 'auto',
-              overflowY: 'clip',
-              marginTop: 0,
-            }}
-          >
-            {forYouWineList.map((wine: any) => (
-              <Box
-                key={wine._id}
-                sx={{
-                  height: '256px',
-                  width: '192px',
-                  borderRadius: '8px',
-                  backgroundColor: randomColor({ luminosity: 'dark' }),
-                  flexShrink: 0,
-                  marginRight: '24px',
-                  marginTop: '16px',
-                  position: 'relative',
-                }}
-              >
-                <img
-                  style={{
-                    height: '156px',
-                    position: 'absolute',
-                    top: '-16px',
-                    left: 'calc(50% - 25px)',
-                  }}
-                  src={"https:" + wine.wine_image_url}
-                />
-                <Stack
-                  sx={{
-                    alignItems: 'flex-start',
-                    padding: '16px',
-                    paddingTop: '156px',
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: 'bold',
-                      fontSize: '16px',
-                      color: 'white',
-                    }}
-                  >
-                    {wine.wine_name}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '12px',
-                      color: 'white',
-                    }}
-                  >
-                    {wine.producer} - {wine.country_name}
-                  </Typography>
-                </Stack>
-              </Box>
-            ))}
-          </Stack>
+          {wineList(forYouWineList)}
         </Stack>
       </Stack>
       {/* <Stack

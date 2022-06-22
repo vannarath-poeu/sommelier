@@ -135,3 +135,10 @@ def load_food():
   return {
     "status": "OK"
   }
+
+@app.get("/wines/{wine_id}")
+def get_wine(wine_id: str):
+  wine = db.wines.find_one({ "_id": wine_id })
+  if not wine:
+    raise HTTPException(status_code=404, detail="wine does not exist")
+  return wine

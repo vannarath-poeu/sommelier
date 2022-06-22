@@ -94,17 +94,23 @@ export default function WinePage() {
             }}
           >
             <Typography
-              variant="h3"
+              variant="h2"
             >
               {wine.wine_name}
             </Typography>
             <Typography
-              variant="h5"
+              variant="h4"
               sx={{
                 fontWeight: 'bold',
               }}
             >
               {wine.producer || "Unknown producer"}
+            </Typography>
+            <br />
+            <Typography
+              variant="h6"
+            >
+              {wine.explanation || "-"}
             </Typography>
             <br />
             <br />
@@ -113,7 +119,7 @@ export default function WinePage() {
                 <Typography
                   variant="h6"
                 >
-                  Goes well with:
+                  This goes well with:
                 </Typography>
                 <ul>
                 {

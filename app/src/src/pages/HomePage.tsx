@@ -60,6 +60,7 @@ export default function HomePage() {
       <Stack
         sx={{
           height: '100%',
+          minHeight: '300px',
           flexDirection: 'row',
           overflowX: 'auto',
           overflowY: 'clip',

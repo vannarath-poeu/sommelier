@@ -9,6 +9,8 @@ import json
 
 import cornac
 
+from explanation import get_explanation
+
 MAX_RECOMMENDATIONS = 20
 
 class User(BaseModel):
@@ -56,19 +58,32 @@ def get_recommendations_for_user(user_id: str, q: Union[str, None] = None):
     item_idx_list, _ = most_pop.rank(0)
     item_id_list = [most_pop_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
     wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
+    wine_list = [w for w in wine_list]
+    for w in wine_list:
+      try:
+        w["explanation"] = get_explanation(user_id, w)
+      except Exception as e:
+        print(e)
+        pass
     return {
       "mode": "MostPop",
       "user_id": user_id,
-      "recommendations": [w for w in wine_list[:MAX_RECOMMENDATIONS]]
+      "recommendations": wine_list
     }
   else:
     item_idx_list, _ = ctr.rank(idx)
     item_id_list = [ctr_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
     wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
+    wine_list = [w for w in wine_list]
+    for w in wine_list:
+      try:
+        w["explanation"] = get_explanation(user_id, w)
+      except:
+        pass
     return {
       "mode": "CTR",
       "user_id": user_id,
-      "recommendations": [w for w in wine_list]
+      "recommendations": wine_list
     }
 
 @app.get("/users/{user_id}")

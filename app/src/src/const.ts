@@ -1,2 +1,2 @@
-// export const API_URL = "http://34.143.141.78/";
-export const API_URL = "http://localhost/";
+export const API_URL = "https://vannarathp.lol/";
+// export const API_URL = "http://localhost/";

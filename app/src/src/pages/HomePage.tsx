@@ -43,7 +43,7 @@ export default function HomePage() {
       const recommendation: any = await response.json();
       setRecommendations(recommendation["recommendations"]);
 
-      const mostPopResponse = await fetch(`${API_URL}users/${username}/recommendations`);
+      const mostPopResponse = await fetch(`${API_URL}users/${username}/recommendations?mode=mostpop`);
       const mostPopRecommendation: any = await mostPopResponse.json();
       setMostPops(mostPopRecommendation["recommendations"]);
       setIsLoading(false);

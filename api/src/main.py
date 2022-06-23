@@ -57,13 +57,14 @@ def hellow():
 
 
 @app.get("/users/{user_id}/recommendations")
-def get_recommendations_for_user(user_id: str, q: Union[str, None] = None):
-  mode = "MostPop"
+def get_recommendations_for_user(user_id: str, q: Union[str, None] = None, mode: str = ""):
   idx = dataset.uid_map.get(user_id, None)
-  if idx is None:
+  if mode.lower() == "mostpop" or idx is None:
+    mode = "MostPop"
     item_idx_list, _ = most_pop.rank(0)
     item_id_list = [most_pop_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
   else:
+    mode = "CTR"
     item_idx_list, _ = ctr.rank(idx)
     item_id_list = [ctr_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
   wine_list = db.wines.find({ "_id": { "$in": item_id_list}})

@@ -59,7 +59,8 @@ def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,
     else:
         explanation=explanation+f"You might interested in its taste of {tastes[0]}"   
     if len(attributs)>0:
-        explanation=explanation+f" ,despite a possible lack of {attributs[0]}"
+        #explanation=explanation+f" ,despite a possible lack of {attributs[0]}"
+        explanation=explanation+f" ,but its {attributs[0]} may not be most favourable"
 
     return explanation
     

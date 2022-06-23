@@ -17,6 +17,11 @@ class User(BaseModel):
   id: str
   name: str
 
+class Rating(BaseModel):
+  user_id: str
+  item_id: str
+  rating: float
+
 MONGO_HOST = os.environ.get("MONGO_HOST", "sommelier.vubzs.mongodb.net")
 MONGO_USERNAME = os.environ.get("MONGO_USERNAME", "sommelier")
 MONGO_PASSWORD = os.environ.get("MONGO_PASSWORD", "sommelier")
@@ -53,38 +58,34 @@ def hellow():
 
 @app.get("/users/{user_id}/recommendations")
 def get_recommendations_for_user(user_id: str, q: Union[str, None] = None):
+  mode = "MostPop"
   idx = dataset.uid_map.get(user_id, None)
   if idx is None:
     item_idx_list, _ = most_pop.rank(0)
     item_id_list = [most_pop_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
-    wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
-    wine_list = [w for w in wine_list]
-    for w in wine_list:
-      try:
-        w["explanation"] = get_explanation(user_id, w)
-      except Exception as e:
-        print(e)
-        pass
-    return {
-      "mode": "MostPop",
-      "user_id": user_id,
-      "recommendations": wine_list
-    }
   else:
     item_idx_list, _ = ctr.rank(idx)
     item_id_list = [ctr_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
-    wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
-    wine_list = [w for w in wine_list]
-    for w in wine_list:
-      try:
-        w["explanation"] = get_explanation(user_id, w)
-      except:
-        pass
-    return {
-      "mode": "CTR",
-      "user_id": user_id,
-      "recommendations": wine_list
-    }
+  wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
+  wine_list = [w for w in wine_list]
+  for w in wine_list:
+    try:
+      w["explanation"] = get_explanation(user_id, w)
+    except:
+      pass
+  for w in wine_list:
+    rating = db.ratings.find_one({ "user_id": user_id, "item_id": w["_id"] })
+    if rating:
+      w["rating"] = {
+        "user_id": rating["user_id"],
+        "item_id": rating["item_id"],
+        "rating": rating["rating"],
+      }
+  return {
+    "mode": mode,
+    "user_id": user_id,
+    "recommendations": wine_list
+  }
 
 @app.get("/users/{user_id}")
 def get_user(user_id: str):
@@ -157,3 +158,34 @@ def get_wine(wine_id: str):
   if not wine:
     raise HTTPException(status_code=404, detail="wine does not exist")
   return wine
+
+@app.post("/ratings")
+def load_ratings():
+  db.ratings.delete_many({})
+
+  all_ratings = cornac.data.Reader().read("../../data/original/wine_ratings.csv", f"UIR", sep=",", skip_lines=1)
+  ratings = [
+    {
+      "user_id": r[0],
+      "item_id": r[1],
+      "rating": float(r[2])
+    }
+    for r in all_ratings
+  ]
+  db.ratings.insert_many(ratings)
+  
+  return {
+    "status": "OK"
+  }
+
+@app.post("/new-ratings")
+def new_rating(rating: Rating):
+  db.ratings.insert_one({
+    "user_id": rating.user_id,
+    "item_id": rating.item_id,
+    "rating": rating.rating,
+  })
+  
+  return {
+    "status": "OK"
+  }

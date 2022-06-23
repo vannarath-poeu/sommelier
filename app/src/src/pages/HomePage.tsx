@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Stack, Typography, Box, IconButton } from '@mui/material';
+import { Stack, Typography, Box, IconButton, CircularProgress } from '@mui/material';
 import {
   MenuRounded,
   LogoutOutlined,
@@ -43,7 +43,7 @@ export default function HomePage() {
       const recommendation: any = await response.json();
       setRecommendations(recommendation["recommendations"]);
 
-      const mostPopResponse = await fetch(`${API_URL}users/unknown/recommendations`);
+      const mostPopResponse = await fetch(`${API_URL}users/${username}/recommendations`);
       const mostPopRecommendation: any = await mostPopResponse.json();
       setMostPops(mostPopRecommendation["recommendations"]);
       setIsLoading(false);
@@ -52,7 +52,18 @@ export default function HomePage() {
   }, [])
 
   if (isLoading) {
-    return <div>Loading ...</div>
+    return (
+      <Stack
+        sx={{
+          height: '100%',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <CircularProgress />
+      </Stack>
+    )
   }
 
   function wineList(wines: any) {

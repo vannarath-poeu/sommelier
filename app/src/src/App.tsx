@@ -6,6 +6,8 @@ import { Routes, Route } from "react-router-dom";
 
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
+import SignupPage from './pages/SignupPage';
+import WinePage from './pages/WinePage';
 
 export default function App() {
   return (
@@ -17,7 +19,9 @@ export default function App() {
       }}
     >
       <Routes>
+        <Route path="/wine" element={<WinePage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route path="/" element={<LoginPage />} />
       </Routes>
     </Container>

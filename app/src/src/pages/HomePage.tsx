@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Stack, Typography, Box, IconButton } from '@mui/material';
+import { Stack, Typography, Box, IconButton, CircularProgress } from '@mui/material';
 import {
   MenuRounded,
   LogoutOutlined,
@@ -9,20 +9,133 @@ import {
   PersonOutlineOutlined,
 } from '@mui/icons-material';
 import randomColor from 'randomcolor';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-import WineList from '../wine-info.json';
+import { API_URL } from '../const';
 
 export default function HomePage() {
-  const topWine = WineList[0];
-  const recommendedWineList = WineList.slice(1, 5);
-  const sweetJuicyWineList = WineList.slice(10, 15);
+
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [mostPops, setMostPops] = React.useState<any>([]);
+  const [recommendations, setRecommendations] = React.useState<any>([]);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { user } = location.state as any;
 
   function logout() {
     navigate('/');
   }
+
+  function goToWine(wine: any) {
+    navigate('/wine', { state: { wine: wine, user: user }});
+  }
+
+  React.useEffect(() => {
+    async function loadRecommendations() {
+      if (!user) {
+        logout();
+        return;
+      }
+      const username: string = user["id"];
+      const response = await fetch(`${API_URL}users/${username}/recommendations`);
+      const recommendation: any = await response.json();
+      setRecommendations(recommendation["recommendations"]);
+
+      const mostPopResponse = await fetch(`${API_URL}users/${username}/recommendations?mode=mostpop`);
+      const mostPopRecommendation: any = await mostPopResponse.json();
+      setMostPops(mostPopRecommendation["recommendations"]);
+      setIsLoading(false);
+    }
+    loadRecommendations();
+  }, [])
+
+  if (isLoading) {
+    return (
+      <Stack
+        sx={{
+          height: '100%',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <CircularProgress />
+      </Stack>
+    )
+  }
+
+  function wineList(wines: any) {
+    return (
+      <Stack
+        sx={{
+          height: '100%',
+          minHeight: '300px',
+          flexDirection: 'row',
+          overflowX: 'auto',
+          overflowY: 'clip',
+          marginTop: 0,
+        }}
+      >
+        {wines.map((wine: any) => (
+          <Box
+            key={wine._id}
+            sx={{
+              height: '256px',
+              width: '192px',
+              borderRadius: '8px',
+              backgroundColor: randomColor({ luminosity: 'dark' }),
+              flexShrink: 0,
+              marginRight: '24px',
+              marginTop: '16px',
+              position: 'relative',
+            }}
+            onClick={() => goToWine(wine)}
+          >
+            <img
+              style={{
+                height: '156px',
+                position: 'absolute',
+                top: '-16px',
+                left: 'calc(50% - 25px)',
+              }}
+              src={"https:" + wine.wine_image_url}
+            />
+            <Stack
+              sx={{
+                alignItems: 'flex-start',
+                padding: '16px',
+                paddingTop: '156px',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  color: 'white',
+                }}
+              >
+                {wine.wine_name}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '12px',
+                  color: 'white',
+                }}
+              >
+                {wine.producer} - {wine.country_name}
+              </Typography>
+            </Stack>
+          </Box>
+        ))}
+      </Stack>
+    )
+  }
+
+  const topWine = mostPops[Math.floor(Math.random() * mostPops.length)];
+  const mostPopWineList = mostPops.slice(1);
+  const forYouWineList = recommendations;
 
   return (
     <Stack
@@ -39,9 +152,15 @@ export default function HomePage() {
           padding: '16px',
         }}
       >
-        <IconButton aria-label="menu">
-          <MenuRounded />
-        </IconButton>
+        <Typography
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '24px',
+          }}
+          variant="h6"
+        >
+          Welcome back, {user.name}!
+        </Typography>
         <IconButton aria-label="logout" onClick={() => logout()}>
           <LogoutOutlined />
         </IconButton>
@@ -67,7 +186,7 @@ export default function HomePage() {
               fontSize: '24px',
             }}
           >
-            Top Choice
+            Spotlight
           </Typography>
           <Stack
             sx={{
@@ -93,6 +212,7 @@ export default function HomePage() {
                 padding: '16px',
                 paddingLeft: '128px',
               }}
+              onClick={() => goToWine(topWine)}
             >
               <Typography
                 sx={{
@@ -109,7 +229,7 @@ export default function HomePage() {
                   color: 'white',
                 }}
               >
-                Lorem ipsum something useful
+                Our top pick! Don't miss out!.
               </Typography>
             </Stack>
           </Stack>
@@ -126,67 +246,9 @@ export default function HomePage() {
               fontSize: '24px',
             }}
           >
-            Recommended for you
+            Most Popular
           </Typography>
-          <Stack
-            sx={{
-              height: '100%',
-              flexDirection: 'row',
-              overflowX: 'auto',
-              overflowY: 'clip',
-              marginTop: 0,
-            }}
-          >
-            {recommendedWineList.map(wine => (
-              <Box
-                sx={{
-                  height: '256px',
-                  width: '192px',
-                  borderRadius: '8px',
-                  backgroundColor: randomColor({ luminosity: 'dark' }),
-                  flexShrink: 0,
-                  marginRight: '24px',
-                  marginTop: '16px',
-                  position: 'relative',
-                }}
-              >
-                <img
-                  style={{
-                    height: '156px',
-                    position: 'absolute',
-                    top: '-16px',
-                    left: 'calc(50% - 25px)',
-                  }}
-                  src={"https:" + wine.wine_image_url}
-                />
-                <Stack
-                  sx={{
-                    alignItems: 'flex-start',
-                    padding: '16px',
-                    paddingTop: '156px',
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: 'bold',
-                      fontSize: '20px',
-                      color: 'white',
-                    }}
-                  >
-                    {wine.wine_name}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '12px',
-                      color: 'white',
-                    }}
-                  >
-                    Lorem ipsum something useful
-                  </Typography>
-                </Stack>
-              </Box>
-            ))}
-          </Stack>
+          {wineList(mostPopWineList)}
         </Stack>
 
         <Stack
@@ -201,70 +263,12 @@ export default function HomePage() {
               fontSize: '24px',
             }}
           >
-            Sweet and Juicy
+            Recommended For You
           </Typography>
-          <Stack
-            sx={{
-              height: '100%',
-              flexDirection: 'row',
-              overflowX: 'auto',
-              overflowY: 'clip',
-              marginTop: 0,
-            }}
-          >
-            {sweetJuicyWineList.map(wine => (
-              <Box
-                sx={{
-                  height: '256px',
-                  width: '192px',
-                  borderRadius: '8px',
-                  backgroundColor: randomColor({ luminosity: 'dark' }),
-                  flexShrink: 0,
-                  marginRight: '24px',
-                  marginTop: '16px',
-                  position: 'relative',
-                }}
-              >
-                <img
-                  style={{
-                    height: '156px',
-                    position: 'absolute',
-                    top: '-16px',
-                    left: 'calc(50% - 25px)',
-                  }}
-                  src={"https:" + wine.wine_image_url}
-                />
-                <Stack
-                  sx={{
-                    alignItems: 'flex-start',
-                    padding: '16px',
-                    paddingTop: '156px',
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: 'bold',
-                      fontSize: '20px',
-                      color: 'white',
-                    }}
-                  >
-                    {wine.wine_name}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '12px',
-                      color: 'white',
-                    }}
-                  >
-                    Lorem ipsum something useful
-                  </Typography>
-                </Stack>
-              </Box>
-            ))}
-          </Stack>
+          {wineList(forYouWineList)}
         </Stack>
       </Stack>
-      <Stack
+      {/* <Stack
         sx={{
           width: '100%',
           flexDirection: 'row',
@@ -284,7 +288,7 @@ export default function HomePage() {
         <IconButton aria-label="menu">
           <PersonOutlineOutlined />
         </IconButton>
-      </Stack>
+      </Stack> */}
     </Stack>
   );
 }

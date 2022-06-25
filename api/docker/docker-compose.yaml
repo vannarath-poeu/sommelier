@@ -7,8 +7,8 @@ services:
       context: .
       dockerfile: api.dockerfile
     ports:
-      - 80:80
+      - 8000:8000
     working_dir: /sommelier/api/src
     volumes:
       - ../../:/sommelier
-    command: uvicorn main:app --reload --host 0.0.0.0 --port 80
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000

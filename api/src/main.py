@@ -9,11 +9,18 @@ import json
 
 import cornac
 
+from explanation import get_explanation
+
 MAX_RECOMMENDATIONS = 20
 
 class User(BaseModel):
   id: str
   name: str
+
+class Rating(BaseModel):
+  user_id: str
+  item_id: str
+  rating: float
 
 MONGO_HOST = os.environ.get("MONGO_HOST", "sommelier.vubzs.mongodb.net")
 MONGO_USERNAME = os.environ.get("MONGO_USERNAME", "sommelier")
@@ -28,6 +35,11 @@ data = cornac.data.Reader().read("../../data/train_test_split/train_ratings_seen
 dataset = cornac.data.Dataset.from_uir(data)
 ctr.fit(dataset)
 ctr_item_ids = list(ctr.train_set.item_ids)
+
+# Load MostPop
+most_pop = cornac.models.MostPop.load("../../data/MostPop.pkl", trainable=False)
+most_pop.fit(dataset)
+most_pop_item_ids = list(most_pop.train_set.item_ids)
 
 app = FastAPI()
 
@@ -45,24 +57,36 @@ def hellow():
 
 
 @app.get("/users/{user_id}/recommendations")
-def get_recommendations_for_user(user_id: str, q: Union[str, None] = None):
+def get_recommendations_for_user(user_id: str, q: Union[str, None] = None, mode: str = ""):
   idx = dataset.uid_map.get(user_id, None)
-  if idx is None:
-    wine_list = db.wines.find()
-    return {
-      "mode": "MostPop",
-      "user_id": user_id,
-      "recommendations": [w for w in wine_list[:MAX_RECOMMENDATIONS]]
-    }
+  if mode.lower() == "mostpop" or idx is None:
+    mode = "MostPop"
+    item_idx_list, _ = most_pop.rank(0)
+    item_id_list = [most_pop_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
   else:
+    mode = "CTR"
     item_idx_list, _ = ctr.rank(idx)
     item_id_list = [ctr_item_ids[item_idx] for item_idx in item_idx_list[:MAX_RECOMMENDATIONS]]
-    wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
-    return {
-      "mode": "CTR",
-      "user_id": user_id,
-      "recommendations": [w for w in wine_list]
-    }
+  wine_list = db.wines.find({ "_id": { "$in": item_id_list}})
+  wine_list = [w for w in wine_list]
+  for w in wine_list:
+    try:
+      w["explanation"] = get_explanation(user_id, w)
+    except:
+      pass
+  for w in wine_list:
+    rating = db.ratings.find_one({ "user_id": user_id, "item_id": w["_id"] })
+    if rating:
+      w["rating"] = {
+        "user_id": rating["user_id"],
+        "item_id": rating["item_id"],
+        "rating": rating["rating"],
+      }
+  return {
+    "mode": mode,
+    "user_id": user_id,
+    "recommendations": wine_list
+  }
 
 @app.get("/users/{user_id}")
 def get_user(user_id: str):
@@ -124,6 +148,44 @@ def load_food():
   with open("../../data/food_list.json") as f:
     food_list = json.load(f)
     db.food.insert_many([{"_id": food, "name": food} for food in food_list])
+  
+  return {
+    "status": "OK"
+  }
+
+@app.get("/wines/{wine_id}")
+def get_wine(wine_id: str):
+  wine = db.wines.find_one({ "_id": wine_id })
+  if not wine:
+    raise HTTPException(status_code=404, detail="wine does not exist")
+  return wine
+
+@app.post("/ratings")
+def load_ratings():
+  db.ratings.delete_many({})
+
+  all_ratings = cornac.data.Reader().read("../../data/original/wine_ratings.csv", f"UIR", sep=",", skip_lines=1)
+  ratings = [
+    {
+      "user_id": r[0],
+      "item_id": r[1],
+      "rating": float(r[2])
+    }
+    for r in all_ratings
+  ]
+  db.ratings.insert_many(ratings)
+  
+  return {
+    "status": "OK"
+  }
+
+@app.post("/new-ratings")
+def new_rating(rating: Rating):
+  db.ratings.insert_one({
+    "user_id": rating.user_id,
+    "item_id": rating.item_id,
+    "rating": rating.rating,
+  })
   
   return {
     "status": "OK"

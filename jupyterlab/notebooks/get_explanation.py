@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 import pickle
 
-
-
 def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,                   
                     num_top_cared_aspects=10, 
                     aspectK=4):
@@ -69,3 +67,4 @@ if __name__=='__main__':
     print(get_explanation ('58534725','14372') )
     print('\n' )
     print(get_explanation ('58534725','1163903') )
+

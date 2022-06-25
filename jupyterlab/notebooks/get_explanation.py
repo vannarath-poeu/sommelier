@@ -1,9 +1,9 @@
 
+
 import sys
 import numpy as np
 import pandas as pd
 import pickle
-
 
 def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,                   
                     num_top_cared_aspects=10, 
@@ -15,7 +15,7 @@ def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,
     ASPECTS_taste=['chocolate','sweet','fruit','berries','fruit','crisp','honey']
     ASPECTS_other=['acidity','value','tannins','finish','complexity','price','body''intensity','structure']
     if wine_info==None:
-        wine_info=pd.read_csv("../../data/wine_info_all.csv")
+        wine_info=pd.read_csv("../../data/wine_info_all.csv",encoding = 'unicode_escape')
         wine_info['Wine ID']=wine_info['Wine ID'].astype(str)
         wine_info.set_index("Wine ID", inplace=True)
         wine_info.fillna('na', inplace=True)
@@ -31,7 +31,7 @@ def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,
 
     UIDX = uidmap[raw_str_uid]
     IIDX = iidmap[ raw_str_iid]
-    num_top_cared_aspects = 10
+    #num_top_cared_aspects = 10
     #aspectK=4
     #id_aspect_map = {v:k for k, v in evaluation_method.sentiment.aspect_id_map.items()}
 
@@ -53,17 +53,18 @@ def get_explanation(raw_str_uid, raw_str_iid, wine_info=None,
     explanation=f"This is a {style} from {country}, "
 
     if len(aromas)>0:
-        explanation=explanation+f"You might interested in its aroma of {aromas[0]}"
+        explanation=explanation+f"You might be interested in its aroma of {aromas[0]}"
         if len(tastes)>0:
             explanation=explanation+f" or its taste of {tastes[0]}"
     else:
         explanation=explanation+f"You might interested in its taste of {tastes[0]}"   
     if len(attributs)>0:
-        #explanation=explanation+f" ,despite a possible lack of {attributs[0]}"
         explanation=explanation+f" ,but its {attributs[0]} may not be most favourable"
 
     return explanation
     
 if __name__=='__main__':
     print(get_explanation ('58534725','14372') )
-    print(get_explanation ('58534725','79762') )
+    print('\n' )
+    print(get_explanation ('58534725','1163903') )
+

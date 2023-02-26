@@ -134,7 +134,7 @@ export default function HomePage() {
   }
 
   const topWine = mostPops[Math.floor(Math.random() * mostPops.length)];
-  const mostPopWineList = mostPops.slice(1);
+  const mostPopWineList = mostPops.slice();
   const forYouWineList = recommendations;
 
   return (
